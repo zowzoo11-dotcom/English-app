@@ -1,22 +1,14 @@
 {
-  "id": "/eng/",
+  "id": "./",
   "name": "English Level Up",
   "short_name": "Eng LevelUp",
-  "start_url": "/eng/",
-  "scope": "/eng/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0f1223",
   "theme_color": "#151935",
   "icons": [
-    {
-      "src": "/eng/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/eng/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
