@@ -8,23 +8,378 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icon-192.png" />
   <style>
-    /* ... (โค้ด CSS ทั้งหมดเหมือนเดิมที่ผมทำไว้) ... */
+    :root{
+      --bg: #0f1223; --card:#151935; --ink:#e9ecff; --muted:#a7b0d9;
+      --accent1:#7aa2ff; --accent2:#40e0d0; --accent3:#b388ff;
+      --ok:#45d483; --warn:#ffb14e; --shadow:0 10px 26px rgba(0,0,0,.32);
+    }
+    [data-theme="light"]{
+      --bg:#f6f7fb; --card:#ffffff; --ink:#1c2340; --muted:#5b6a9a;
+      --accent1:#3b82f6; --accent2:#06b6d4; --accent3:#8b5cf6;
+      --ok:#10b981; --warn:#f59e0b; --shadow:0 10px 24px rgba(16,24,40,.08);
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
+      background: radial-gradient(1200px 700px at 80% -10%, rgba(125,106,255,.25), transparent 60%),
+                  radial-gradient(800px 500px at -10% 0, rgba(64,224,208,.18), transparent 60%),
+                  var(--bg);
+      color:var(--ink); padding:24px 16px 80px;
+    }
+    .shell{max-width:980px; margin:0 auto}
+
+    .header{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:18px}
+    .brand{display:flex; align-items:center; gap:12px}
+    .logo{width:40px; height:40px; border-radius:12px; background: conic-gradient(from 180deg, var(--accent1), var(--accent2), var(--accent3), var(--accent1)); box-shadow:0 8px 24px rgba(59,130,246,.35)}
+    h1{font-size:clamp(22px,4vw,32px); margin:0}
+    .sub{color:var(--muted); font-size:14px; margin-top:2px}
+
+    .tools{display:flex; gap:10px; align-items:center}
+    .btn{cursor:pointer; border:0; border-radius:12px; padding:10px 14px; color:#fff; background:linear-gradient(135deg, var(--accent1), var(--accent3)); font-weight:700; box-shadow:var(--shadow); transition:transform .06s ease}
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{background:linear-gradient(135deg,#262b52,#1a1e3c)}
+    .btn.outline{background:transparent; border:1px solid rgba(255,255,255,.15); color:var(--ink)}
+
+    .tabs{display:flex; gap:8px; background:transparent; margin:12px 0 20px}
+    .tab{padding:10px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.08); cursor:pointer; font-weight:700; color:var(--muted); background:linear-gradient(180deg, rgba(255,255,255,.04), transparent)}
+    .tab.active{color:var(--ink); border-color:transparent; background:var(--card); box-shadow:var(--shadow)}
+
+    .panel{background:var(--card); border-radius:18px; padding:16px; box-shadow:var(--shadow)}
+    .panel h3{margin:0 0 8px; font-size:16px}
+    .panel p{margin:6px 0 0; color:var(--muted); font-size:14px}
+
+    .summary{display:grid; grid-template-columns:1.3fr .7fr; gap:16px; margin-bottom:22px}
+    @media (max-width:760px){.summary{grid-template-columns:1fr}}
+    .progress-wrap{display:flex; align-items:center; gap:16px}
+    .bar{height:14px; background:#232953; border-radius:999px; overflow:hidden; flex:1}
+    .bar .fill{height:100%; width:0; background:linear-gradient(90deg, var(--accent2), var(--accent1)); transition:width .35s ease}
+    .stat{min-width:88px; text-align:right; font-weight:800}
+
+    .kpis{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+    .kpi{background:linear-gradient(180deg, rgba(255,255,255,.04), transparent); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:14px; text-align:center}
+    .kpi .num{font-size:22px; font-weight:800}
+    .kpi .lbl{color:var(--muted); font-size:12px}
+
+    .days{display:grid; grid-template-columns:repeat(2,1fr); gap:16px}
+    @media (max-width:900px){.days{grid-template-columns:1fr}}
+    .day{background:var(--card); border-radius:18px; padding:14px 14px 16px; box-shadow:var(--shadow); position:relative; overflow:hidden}
+    .day::before{content:""; position:absolute; inset:auto auto 0 0; width:55%; height:5px; background:linear-gradient(90deg, var(--accent1), var(--accent2)); border-radius:999px}
+    .day-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px}
+    .title{font-weight:800; font-size:16px}
+    .tag{color:var(--muted); font-size:12px}
+    .task{display:flex; align-items:center; gap:12px; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.06); margin:8px 0; background:linear-gradient(180deg, rgba(255,255,255,.04), transparent)}
+    .task.done{opacity:.7}
+    .chk{--s:22px; inline-size:var(--s); block-size:var(--s); border-radius:7px; border:2px solid #3a457a; display:grid; place-items:center; cursor:pointer; position:relative; flex:0 0 var(--s); background:#111634}
+    .chk input{appearance:none; position:absolute; inset:0; margin:0; cursor:pointer}
+    .mark{transform:scale(0); transition:transform .18s ease}
+    .chk input:checked + .mark{transform:scale(1)}
+    .mark svg{width:16px; height:16px; fill:var(--ok)}
+    .ttext{flex:1}
+    .ttext .name{font-weight:600}
+    .ttext .hint{font-size:12px; color:var(--muted)}
+    .mini-bar{height:10px; background:#232953; border-radius:999px; overflow:hidden; margin-top:8px}
+    .mini-bar .fill{height:100%; width:0; background:linear-gradient(90deg, var(--accent3), var(--accent2)); transition:width .35s ease}
+
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .field{flex:1; min-width:160px}
+    label{display:block; font-size:12px; color:var(--muted); margin:6px 2px}
+    input[type="text"], textarea, input[type="date"]{width:100%; background:#0f1438; color:var(--ink); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px 12px}
+    [data-theme="light"] input[type="text"], [data-theme="light"] textarea, [data-theme="light"] input[type="date"]{background:#f2f4fb; color:#1c2340; border:1px solid rgba(0,0,0,.08)}
+    textarea{min-height:84px; resize:vertical}
+    .list{margin-top:14px; display:grid; gap:10px}
+    .card{padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,.08); background:linear-gradient(180deg, rgba(255,255,255,.04), transparent)}
+    .card h4{margin:0 0 6px}
+    .pill{display:inline-block; font-size:11px; padding:4px 8px; border-radius:999px; background:#1a2047; color:#b8c2ff; margin-right:6px}
+    [data-theme="light"] .pill{background:#e9eeff; color:#36457a}
+    .ops{display:flex; gap:8px}
+    .ghost{background:transparent; border:1px solid rgba(255,255,255,.15); color:var(--ink); border-radius:10px; padding:6px 10px; cursor:pointer}
+
+    .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); opacity:0; background:rgba(17,24,39,.9); color:#fff; padding:10px 14px; border-radius:10px; box-shadow:var(--shadow); transition: all .25s ease; z-index:30}
+    .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+    .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.4); z-index:50}
+    .modal.active{display:grid}
+    .modal-card{background:var(--card); padding:24px 20px; border-radius:18px; text-align:center; width:min(420px, 92vw); box-shadow:var(--shadow)}
+    .pop{font-size:38px; margin:0 0 6px}
+    #fx{position:fixed; inset:0; pointer-events:none; z-index:60}
+
+    .foot{display:flex; gap:8px; align-items:center; justify-content:space-between; margin-top:18px; color:var(--muted); font-size:12px}
   </style>
 </head>
 <body data-theme="dark">
-  <!-- ตัว UI เหมือนเวอร์ชันก่อนเลย -->
   <canvas id="fx"></canvas>
   <div class="shell">
-    <!-- header + tabs + checklist + vocab -->
+    <div class="header">
+      <div class="brand">
+        <div class="logo" aria-hidden></div>
+        <div>
+          <h1>English Level Up</h1>
+          <div class="sub">เช็กฝึกประจำวัน + จดศัพท์/ประโยค — ธีมเดิม สวยมินิมอล 💪📚</div>
+        </div>
+      </div>
+      <div class="tools">
+        <button class="btn secondary" id="themeBtn" title="Toggle theme">🌗 Theme</button>
+        <button class="btn outline" id="resetBtn" title="ล้างข้อมูลสัปดาห์นี้">♻️ Reset Week</button>
+        <button class="btn" id="installBtn" title="ติดตั้งเป็นแอป (PWA)">📲 Install</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="checklist">✅ Checklist</button>
+      <button class="tab" data-tab="vocab">📝 Vocab Journal</button>
+    </div>
+
+    <section id="page-checklist">
+      <div class="summary">
+        <div class="panel">
+          <h3>ความคืบหน้าสัปดาห์นี้</h3>
+          <div class="progress-wrap">
+            <div class="bar"><div class="fill" id="weekFill"></div></div>
+            <div class="stat" id="weekStat">0/0</div>
+          </div>
+          <p id="weekLabel"></p>
+          <div class="kpis" style="margin-top:10px">
+            <div class="kpi"><div class="num" id="lvl">Lv. 0</div><div class="lbl">เลเวล (วันที่ทำครบ)</div></div>
+            <div class="kpi"><div class="num" id="streak">0 🔥</div><div class="lbl">สตรีค (วันติดกัน)</div></div>
+            <div class="kpi"><div class="num" id="todayProg">0%</div><div class="lbl">ความคืบหน้าวันนี้</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>สัปดาห์: <span id="weekKey"></span></h3>
+          <p>ข้อมูลเช็กบ็อกซ์ผูกกับ ISO week อัตโนมัติ เปลี่ยนสัปดาห์แล้วของเดิมยังอยู่</p>
+          <p style="margin-top:8px">ติ๊กครบทั้งวัน = "Level Up" พร้อมคอนเฟตตี้ 🎉</p>
+        </div>
+      </div>
+      <div class="days" id="days"></div>
+    </section>
+
+    <section id="page-vocab" style="display:none">
+      <div class="panel" style="margin-bottom:16px">
+        <h3>เพิ่มคำศัพท์/ประโยค</h3>
+        <div class="row">
+          <div class="field"><label>วันที่</label><input type="date" id="vcDate"></div>
+          <div class="field"><label>คำศัพท์ (Word)</label><input type="text" id="vcWord" placeholder="เช่น bulk, consistent, sprint"></div>
+          <div class="field"><label>ความหมาย (Meaning)</label><input type="text" id="vcMeaning" placeholder="เช่น จำนวนมาก, สม่ำเสมอ"></div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <div class="field" style="flex:1 1 100%">
+            <label>ประโยคตัวอย่าง (Example Sentence)</label>
+            <textarea id="vcExample" placeholder="Write a short example sentence using the word..."></textarea>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px; justify-content:flex-end">
+          <button class="btn" id="addVocab">➕ Add</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>รายการวันนี้ <span id="vcCount" class="pill">0 รายการ</span></h3>
+        <div class="row" style="margin:6px 0 10px; align-items:center">
+          <button class="ghost" id="prevDay">◀</button>
+          <input type="date" id="listDate" class="field" style="max-width:200px">
+          <button class="ghost" id="nextDay">▶</button>
+          <div style="flex:1"></div>
+          <button class="ghost" id="clearDay">🗑 ลบทั้งหมดของวัน</button>
+        </div>
+        <div id="vcList" class="list"></div>
+      </div>
+    </section>
+
+    <div class="foot">
+      <div>ทำด้วย ♥ เพื่อ 86 — โหมด <span id="modeTxt">Dark</span></div>
+      <div>ข้อมูลเก็บในเครื่อง (localStorage) — ติดตั้งเป็นแอปและใช้แบบออฟไลน์ได้</div>
+    </div>
   </div>
 
-  <script>
-    /* ... (โค้ด JavaScript ทั้งหมดของ checklist, vocab, confetti ฯลฯ) ... */
+  <div class="toast" id="toast">Saved</div>
+  <div class="modal" id="modal"><div class="modal-card"><div class="pop">🎉</div><h2>Level Up!</h2><p id="modalMsg">เยี่ยมมาก! ทำครบทั้งวันแล้ว</p><div style="margin-top:14px"><button class="btn" id="closeModal">ปิด</button></div></div></div>
 
-    // ✅ จุดสำคัญแก้ให้ใช้ path แบบ relative
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  <script>
+    const themeKey = 'englvl_theme';
+    const vcKey = (date) => `englvl_vocab_${date}`;
+    const getISOWeek = (d = new Date()) => {
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = (date.getUTCDay()+6)%7; date.setUTCDate(date.getUTCDate()-dayNum+3);
+      const firstThu = new Date(Date.UTC(date.getUTCFullYear(),0,4));
+      const week = 1 + Math.round(((date-firstThu)/86400000 - 3 + ((firstThu.getUTCDay()+6)%7))/7);
+      return `${date.getUTCFullYear()}-W${String(week).padStart(2,'0')}`;
+    };
+    const weekKey = () => `englvl_${getISOWeek()}`;
+    const read = () => JSON.parse(localStorage.getItem(weekKey())||'{}');
+    const write = (o) => localStorage.setItem(weekKey(), JSON.stringify(o));
+
+    const tabs = document.querySelectorAll('.tab');
+    const pages = { checklist: document.getElementById('page-checklist'), vocab: document.getElementById('page-vocab') };
+    tabs.forEach(t=> t.addEventListener('click', ()=>{
+      tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active');
+      const id = t.dataset.tab; Object.entries(pages).forEach(([k,el])=> el.style.display = (k===id)?'block':'none');
+    }));
+
+    const DAYS = [
+      { title:"จันทร์ – Listening", tag:"ฟัง & Shadowing", tasks:[
+        {name:"ฟัง Podcast/YouTube 15 นาที", hint:"หัวข้อที่ชอบจะจำง่าย"},
+        {name:"เขียนสรุป 3–5 ประโยค", hint:"ภาษาอังกฤษล้วน"},
+        {name:"เลียนเสียงประโยค 5 นาที", hint:"เลือก 3–5 ประโยค"},
+      ]},
+      { title:"อังคาร – Reading", tag:"อ่าน & จดศัพท์", tasks:[
+        {name:"อ่านบทความ/ข่าว 1 ชิ้น", hint:"5–10 นาที"},
+        {name:"จดศัพท์ใหม่ 3–5 คำ", hint:"พร้อม part of speech"},
+        {name:"แต่งประโยคใช้ศัพท์ใหม่", hint:"อย่างน้อย 3 ประโยค"},
+      ]},
+      { title:"พุธ – Writing", tag:"เขียน Journal", tasks:[
+        {name:"เขียน Journal 5–10 บรรทัด", hint:"เล่าเรื่องวันนี้"},
+        {name:"เช็กแกรมมาร์ด้วย AI/Grammarly", hint:"ดูคำอธิบายที่แก้"},
+        {name:"เก็บประโยคที่อยากใช้จริง", hint:"1–2 ประโยค"},
+      ]},
+      { title:"พฤหัส – Speaking", tag:"พูด & อัดเสียง", tasks:[
+        {name:"อัดเสียงเล่าเรื่อง 3–5 นาที", hint:"หัวข้ออิสระ"},
+        {name:"ฟังตัวเอง + จดจุดติดขัด", hint:"ออกเสียง/จังหวะ"},
+        {name:"คุยกับเพื่อน/แลกภาษา (ถ้าได้)", hint:"15 นาที"},
+      ]},
+      { title:"ศุกร์ – Mixed", tag:"ผสมครบ 4 ทักษะ", tasks:[
+        {name:"ฟัง Podcast 5 นาที", hint:"เลือกสั้น ๆ"},
+        {name:"อ่านบทความสั้น 1 ชิ้น", hint:"ข่าว/บล็อก"},
+        {name:"เขียน summary 3 บรรทัด", hint:"และพูดสรุป 1 นาที"},
+      ]},
+      { title:"เสาร์ – Vocabulary", tag:"ทบทวนศัพท์", tasks:[
+        {name:"ทบทวนศัพท์ทั้งสัปดาห์", hint:"เปิดสมุด/แอป"},
+        {name:"เล่น flashcards 10–15 นาที", hint:"Anki/Quizlet"},
+        {name:"แต่งประโยคใหม่จากศัพท์เก่า", hint:"อย่างน้อย 3 ประโยค"},
+      ]},
+      { title:"อาทิตย์ – Review & Fun", tag:"ดู-เพลิน-ได้ความรู้", tasks:[
+        {name:"ดูหนัง/ซีรีส์/YouTube 30–60 นาที", hint:"เปิดซับอังกฤษ"},
+        {name:"สรุปสิ่งที่ได้เรียนรู้", hint:"ศัพท์/สำนวนใหม่"},
+        {name:"เลือกศัพท์/ประโยคเด็ดประจำสัปดาห์", hint:"Top picks"},
+      ]},
+    ];
+
+    const daysEl = document.getElementById('days');
+    function build(){
+      daysEl.innerHTML = '';
+      DAYS.forEach((day, di)=>{
+        const card = document.createElement('section'); card.className='day'; card.dataset.di = di;
+        card.innerHTML = `
+          <div class="day-head">
+            <div><div class="title">${day.title}</div><div class="tag">${day.tag}</div></div>
+            <div class="tag"><span id="count-${di}">0/0</span></div>
+          </div>
+          <div class="tasks"></div>
+          <div class="mini-bar" aria-hidden><div class="fill" id="fill-${di}"></div></div>
+        `;
+        const wrap = card.querySelector('.tasks');
+        day.tasks.forEach((t, ti)=>{
+          const row = document.createElement('div'); row.className='task';
+          row.innerHTML = `
+            <label class="chk">
+              <input type="checkbox" data-di="${di}" data-ti="${ti}" />
+              <span class="mark"><svg viewBox="0 0 24 24"><path d="M20.285 6.709a1 1 0 0 0-1.414-1.414l-9.192 9.192-4.243-4.243a1 1 0 1 0-1.414 1.414l5 5a1 1 0 0 0 1.414 0l10.85-10.85z"/></svg></span>
+            </label>
+            <div class="ttext"><div class="name">${t.name}</div><div class="hint">${t.hint||''}</div></div>`;
+          wrap.appendChild(row);
+        });
+        daysEl.appendChild(card);
+      });
     }
+
+    function loadState(){
+      const s = read();
+      document.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+        const di = cb.dataset.di, ti = cb.dataset.ti; const val = s?.[di]?.[ti] ?? false;
+        cb.checked = !!val; if (val) cb.closest('.task').classList.add('done');
+      });
+      refreshAll();
+    }
+    function saveTick(di, ti, val){ const s = read(); s[di] = s[di] || {}; s[di][ti] = val; write(s); }
+
+    function refreshAll(){
+      DAYS.forEach((_, di)=>{
+        const tasks = document.querySelectorAll(`input[data-di="${di}"]`);
+        const done = [...tasks].filter(x=>x.checked).length; const total = tasks.length;
+        const pct = Math.round((done/total)*100); const bar = document.getElementById(`fill-${di}`); const ct = document.getElementById(`count-${di}`);
+        if (bar) bar.style.width = pct+'%'; if (ct) ct.textContent = `${done}/${total}`;
+        tasks.forEach(x=> x.closest('.task').classList.toggle('done', x.checked));
+      });
+      const all = document.querySelectorAll('input[type=checkbox]');
+      const doneAll = [...all].filter(x=>x.checked).length; const totalAll = all.length;
+      document.getElementById('weekFill').style.width = (doneAll/totalAll*100)+'%';
+      document.getElementById('weekStat').textContent = `${doneAll}/${totalAll}`;
+      document.getElementById('weekLabel').textContent = `ทำแล้ว ${Math.round(doneAll/totalAll*100)}% ของสัปดาห์นี้`;
+      let levels=0, todayPct=0; DAYS.forEach((_, di)=>{ const t = document.querySelectorAll(`input[data-di="${di}"]`); const d=[...t].filter(x=>x.checked).length; const tot=t.length; if (d===tot) levels++; if (isTodayIndex(di)) todayPct = Math.round((d/tot)*100); });
+      document.getElementById('lvl').textContent = `Lv. ${levels}`;
+      document.getElementById('todayProg').textContent = `${todayPct}%`;
+      document.getElementById('streak').textContent = `${calcStreak()} 🔥`;
+    }
+    function isTodayIndex(di){ const dow=(new Date().getDay()+6)%7; return di===dow; }
+    function dayCompleted(di){ const t = document.querySelectorAll(`input[data-di="${di}"]`); return [...t].every(x=>x.checked); }
+    function calcStreak(){ const today=(new Date().getDay()+6)%7; let c=0; for(let i=today;i>=0;i--){ if (dayCompleted(i)) c++; else break; } return c; }
+
+    const modal = document.getElementById('modal'); const modalMsg = document.getElementById('modalMsg');
+    function showLevelUp(di){ const name = DAYS[di].title.split('–')[0].trim(); modalMsg.textContent = `สุดยอด! ทำครบวัน${name} แล้ว`; modal.classList.add('active'); confettiBurst(); }
+    document.getElementById('closeModal').addEventListener('click', ()=> modal.classList.remove('active'));
+    modal.addEventListener('click', (e)=>{ if (e.target===modal) modal.classList.remove('active'); });
+    function confettiBurst(){ const c=document.getElementById('fx'); const ctx=c.getContext('2d'); const W=c.width=innerWidth, H=c.height=innerHeight; const N=160; const parts=Array.from({length:N},()=>({x:Math.random()*W,y:-20,r:2+Math.random()*4,vx:-2+Math.random()*4,vy:2+Math.random()*3,a:Math.random()*Math.PI,s:.96+.02*Math.random()})); let t=0, req; const palette=['#7aa2ff','#40e0d0','#b388ff','#f59e0b','#10b981']; function step(){ ctx.clearRect(0,0,W,H); parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.03; p.a+=0.05; p.vx*=p.s; p.vy*=p.s; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.a); ctx.fillStyle=palette[(p.r|0)%palette.length]; ctx.fillRect(-p.r,-p.r,p.r*2,p.r*2); ctx.restore(); }); if(t++<120) req=requestAnimationFrame(step); else cancelAnimationFrame(req);} step(); setTimeout(()=>{const ctx2=c.getContext('2d'); ctx2.clearRect(0,0,W,H);},2400); }
+
+    function attach(){
+      document.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+        cb.addEventListener('change', ()=>{ const di=+cb.dataset.di, ti=+cb.dataset.ti; saveTick(di, ti, cb.checked); refreshAll(); if (dayCompleted(di)) showLevelUp(di); });
+      });
+    }
+
+    document.getElementById('resetBtn').addEventListener('click', ()=>{ if (confirm('ล้างติ๊กทั้งหมดสำหรับสัปดาห์นี้?')){ localStorage.removeItem(weekKey()); document.querySelectorAll('input[type=checkbox]').forEach(cb=> cb.checked=false); refreshAll(); } });
+    const body=document.body; function setTheme(t){ body.setAttribute('data-theme', t); localStorage.setItem(themeKey, t); document.getElementById('modeTxt').textContent = t==='light'?'Light':'Dark'; }
+    document.getElementById('themeBtn').addEventListener('click', ()=> setTheme(body.getAttribute('data-theme')==='light'?'dark':'light'));
+
+    document.getElementById('weekKey').textContent = getISOWeek();
+
+    build(); attach(); loadState(); const pref = localStorage.getItem(themeKey)||'dark'; setTheme(pref); refreshAll();
+
+    const vcDate = document.getElementById('vcDate'); const vcWord = document.getElementById('vcWord'); const vcMeaning = document.getElementById('vcMeaning'); const vcExample = document.getElementById('vcExample'); const addVocabBtn = document.getElementById('addVocab'); const vcList = document.getElementById('vcList'); const vcCount = document.getElementById('vcCount'); const listDate = document.getElementById('listDate'); const prevDay = document.getElementById('prevDay'); const nextDay = document.getElementById('nextDay'); const clearDay = document.getElementById('clearDay');
+
+    function fmt(d){ return d.toISOString().slice(0,10); }
+    function setToday(){ const t = new Date(); const s = fmt(t); vcDate.value = s; listDate.value = s; renderList(); }
+    function saveVocab(date, item){ const key = vcKey(date); const arr = JSON.parse(localStorage.getItem(key)||'[]'); arr.push({...item, id: Date.now()}); localStorage.setItem(key, JSON.stringify(arr)); showToast('Saved ✔'); renderList(); }
+    function loadVocab(date){ return JSON.parse(localStorage.getItem(vcKey(date))||'[]'); }
+    function updateVocab(date, id, patch){ const arr = loadVocab(date).map(x=> x.id===id? {...x, ...patch}:x); localStorage.setItem(vcKey(date), JSON.stringify(arr)); renderList(); }
+    function deleteVocab(date, id){ const arr = loadVocab(date).filter(x=> x.id!==id); localStorage.setItem(vcKey(date), JSON.stringify(arr)); renderList(); }
+    function renderList(){ const d=listDate.value; const data = loadVocab(d); vcList.innerHTML=''; vcCount.textContent = `${data.length} รายการ`; if (!data.length){ vcList.innerHTML = '<div class="tag">ยังไม่มีรายการสำหรับวันนี้</div>'; return; }
+      data.forEach(item=>{ const el=document.createElement('div'); el.className='card'; el.innerHTML = `
+        <h4>${item.word} <span class="pill">${item.meaning||''}</span></h4>
+        <div style="font-size:13px; color:var(--muted); margin-bottom:8px">${new Date(item.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+        <div style="white-space:pre-wrap">${item.example||''}</div>
+        <div class="ops" style="margin-top:10px">
+          <button class="ghost" data-op="edit">✏️ แก้ไข</button>
+          <button class="ghost" data-op="del">🗑 ลบ</button>
+        </div>`;
+        el.querySelector('[data-op="edit"]').addEventListener('click', ()=>{
+          const w = prompt('แก้คำศัพท์', item.word); if (w===null) return; const m=prompt('แก้ความหมาย', item.meaning||''); if (m===null) return; const ex=prompt('แก้ประโยคตัวอย่าง', item.example||''); if (ex===null) return; updateVocab(d, item.id, {word:w, meaning:m, example:ex});
+        });
+        el.querySelector('[data-op="del"]').addEventListener('click', ()=>{ if (confirm('ลบรายการนี้?')) deleteVocab(d, item.id); });
+        vcList.appendChild(el);
+      });
+    }
+    addVocabBtn.addEventListener('click', ()=>{
+      const date = vcDate.value || fmt(new Date()); const word = vcWord.value.trim(); if (!word) return alert('ใส่คำศัพท์ก่อนน้า');
+      saveVocab(date, {word, meaning: vcMeaning.value.trim(), example: vcExample.value.trim(), ts: Date.now()});
+      vcWord.value=''; vcMeaning.value=''; vcExample.value=''; listDate.value = date; renderList();
+    });
+    listDate.addEventListener('change', renderList);
+    function shiftDay(delta){ const d = new Date(listDate.value); d.setDate(d.getDate()+delta); listDate.value = fmt(d); renderList(); }
+    prevDay.addEventListener('click', ()=> shiftDay(-1)); nextDay.addEventListener('click', ()=> shiftDay(1));
+    clearDay.addEventListener('click', ()=>{ const d=listDate.value; if (confirm('ลบทั้งหมดของวันนี้?')){ localStorage.removeItem(vcKey(d)); renderList(); }});
+    function showToast(msg){ const t=document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(()=> t.classList.remove('show'), 1400); }
+
+    setToday();
+
+    // ---- PWA (relative paths for GitHub Pages project) ----
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
+    let deferredPrompt; const installBtn = document.getElementById('installBtn');
+    installBtn.style.display = 'none';
+    window.addEventListener('beforeinstallprompt', (e)=>{
+      e.preventDefault(); deferredPrompt = e; installBtn.style.display='inline-block';
+    });
+    installBtn.addEventListener('click', async ()=>{
+      if (!deferredPrompt) { alert('ถ้าไม่เห็นปุ่ม ให้กดเมนู ⋮ > Add to Home screen'); return; }
+      deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null;
+    });
   </script>
 </body>
 </html>
