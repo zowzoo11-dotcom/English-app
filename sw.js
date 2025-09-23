@@ -1,10 +1,10 @@
-const CACHE = "eng-levelup-v2";
+const CACHE = "eng-levelup-ghpages-v1";
 const ASSETS = [
-  "/eng/",
-  "/eng/index.html",
-  "/eng/manifest.webmanifest",
-  "/eng/icon-192.png",
-  "/eng/icon-512.png"
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
 self.addEventListener("install", (e) => {
@@ -29,7 +29,7 @@ self.addEventListener("fetch", (e) => {
         const cc = res.clone();
         caches.open(CACHE).then((c) => c.put(e.request, cc));
         return res;
-      }).catch(() => caches.match("/eng/index.html"))
+      }).catch(() => caches.match("./index.html"))
     )
   );
 });
